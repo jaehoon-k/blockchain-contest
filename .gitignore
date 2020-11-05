@@ -1,0 +1,11 @@
+/target/
+/build/
+/node_modules/
+.DS_Store
+
+### intelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
