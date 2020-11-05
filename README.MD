@@ -1,5 +1,11 @@
 ## 환경 설정
 
+npm install 실행
+
+node_modules/@trufflesuite/web3-provider-engine/subproviders/rpc.js 파일에 jwt 설정
+
+## 테스트
+
 Swagger UI 주소 :  http://localhost:8080/swagger-ui.html#/
 
 테스트 계정 주소 :
