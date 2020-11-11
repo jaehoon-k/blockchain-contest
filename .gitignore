@@ -1,6 +1,7 @@
 /target/
 /build/
 /node_modules/
+/upload-dir/
 .DS_Store
 
 ### intelliJ IDEA ###

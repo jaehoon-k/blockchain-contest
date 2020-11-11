@@ -1,9 +1,14 @@
 package com.skcc.bcsvc;
 
+import com.skcc.bcsvc.storage.StorageProperties;
+import com.skcc.bcsvc.storage.StorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
@@ -27,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 
 @SpringBootApplication
+@EnableConfigurationProperties(StorageProperties.class)
 public class Application {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -34,5 +40,13 @@ public class Application {
     public static void main(String[] args) {
         // TODO Auto-generated method stub
         SpringApplication.run(Application.class, args);
+    }
+
+    @Bean
+    CommandLineRunner init(StorageService storageService) {
+        return (args) -> {
+            storageService.deleteAll();
+            storageService.init();
+        };
     }
 }
