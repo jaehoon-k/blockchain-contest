@@ -21,9 +21,6 @@ contract EVBatteryToken is Context, IERC20 {
         uint256 value;
     }
 
-
-
-
     uint256 private _totalSupply;
 
     string private _name;
@@ -54,9 +51,7 @@ contract EVBatteryToken is Context, IERC20 {
         emit Deposited(buyer, amount);
     }
 
-    
-
-   function status(address buyer, bool stat) public  {
+    function status(address buyer, bool stat) public  {
         if(stat==true){
             _deposits[buyer].status=PaymentStatus.Completed;
         }
