@@ -10,3 +10,10 @@
 *.iml
 *.ipr
 out/
+.settings/org.eclipse.m2e.core.prefs
+.settings/org.eclipse.jdt.core.prefs
+.project
+.factorypath
+.classpath
+.vscode/launch.json
+.settings/org.eclipse.jdt.apt.core.prefs
