@@ -6,7 +6,7 @@ import org.web3j.protocol.exceptions.TransactionException;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
-
+import java.util.Map;
 
 public interface EVBatteryTokenService {
     String getWeb3ClientVersion() throws IOException;
@@ -16,8 +16,8 @@ public interface EVBatteryTokenService {
     String mint(String ownerAddr, Uint amount) throws IOException, CipherException, TransactionException;
     
     Uint getDeposit(String account) throws IOException, CipherException, ExecutionException, InterruptedException;
-    String deposit(String seller, Uint amount) throws IOException, CipherException, TransactionException;
-    String release(String seller) throws IOException, CipherException, TransactionException;
+    Map<String, Object> deposit(String seller, Uint amount) throws IOException, CipherException, TransactionException;
+    Map<String, Object> release(String seller) throws IOException, CipherException, TransactionException;
     String status(String seller, boolean stat) throws IOException, CipherException, TransactionException;
     String refund(String seller) throws IOException, CipherException, TransactionException;
 

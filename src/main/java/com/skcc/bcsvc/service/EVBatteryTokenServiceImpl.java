@@ -1,21 +1,14 @@
 package com.skcc.bcsvc.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.skcc.bcsvc.dto.BatteryCertificatesDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.*;
-import org.web3j.abi.datatypes.generated.Bytes32;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
@@ -27,7 +20,7 @@ import org.web3j.protocol.exceptions.TransactionException;
 import org.web3j.tx.FastRawTransactionManager;
 import org.web3j.tx.response.PollingTransactionReceiptProcessor;
 import org.web3j.tx.response.TransactionReceiptProcessor;
-
+import java.util.Map;
 
 import org.web3j.protocol.core.methods.response.*;
 
@@ -214,7 +207,7 @@ public class EVBatteryTokenServiceImpl implements EVBatteryTokenService{
     }
 
     @Override
-    public String deposit(String sellerAddr, Uint amount) throws IOException, CipherException, TransactionException {
+    public Map<String, Object> deposit(String sellerAddr, Uint amount) throws IOException, CipherException, TransactionException {
 
         String contractAddr = this.evBatteryTokenAddress;
         String functionName2 = "deposit";
@@ -233,16 +226,27 @@ public class EVBatteryTokenServiceImpl implements EVBatteryTokenService{
         FastRawTransactionManager txMgr = new FastRawTransactionManager(web3j, credentialsMap.get("buyer"));
 
         String txHash = txMgr.sendTransaction(BigInteger.ZERO, BigInteger.valueOf(10_000_000), contractAddr, encodedFunc2, BigInteger.ZERO).getTransactionHash();
-        log.info("Waiting receipt - txHahs: {}, function: {}, contract: {}", new Object[]{txHash, functionName2, contractAddr});
+        log.info("Polling receipt - txHahs: {}, function: {}, contract: {}", txHash, functionName2, contractAddr);
         TransactionReceiptProcessor receiptProcessor = new PollingTransactionReceiptProcessor(web3j, 100, 1000);
         TransactionReceipt receipt = receiptProcessor.waitForTransactionReceipt(txHash);
 
         log.info("Recetipt: " + receipt);
+        if (!receipt.isStatusOK()) {
+                throw new RuntimeException("Transaction Failed: " + receipt);
+        }
 
-        return txHash;
+        List<String> topics = receipt.getLogs().get(0).getTopics();
+
+        Map<String,Object> result = new HashMap<>();
+        result.put("txHash", txHash);
+        result.put("from(Buyer)", credentialsMap.get("buyer").getAddress());
+        result.put("to(Seller)", new Address(topics.get(1)).getValue());
+        result.put("amount", new BigInteger(topics.get(2).substring(2), 16).toString());
+
+        return result;
     }
     @Override
-    public String release(String seller) throws IOException, CipherException, TransactionException {
+    public Map<String, Object> release(String seller) throws IOException, CipherException, TransactionException {
 
         String contractAddr = this.evBatteryTokenAddress;
         String functionName2 = "release";
@@ -264,7 +268,18 @@ public class EVBatteryTokenServiceImpl implements EVBatteryTokenService{
 
         log.info("Recetipt: " + receipt);
 
-        return txHash;
+        if (!receipt.isStatusOK()) {
+                throw new RuntimeException("Transaction Failed: " + receipt);
+        }
+        List<String> topics = receipt.getLogs().get(0).getTopics();
+
+        Map<String,Object> result = new HashMap<>();
+        result.put("txHash", txHash);
+        result.put("from(Buyer)", credentialsMap.get("buyer").getAddress());
+        result.put("to(Seller)", new Address(topics.get(1)).getValue());
+        result.put("amount", new BigInteger(topics.get(2).substring(2), 16).toString());
+
+        return result;
     }
     
     @Override

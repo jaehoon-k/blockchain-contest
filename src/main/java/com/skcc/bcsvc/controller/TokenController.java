@@ -26,6 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.Map;
+
+
+
 
 @RestController
 public class TokenController {
@@ -58,15 +62,16 @@ public class TokenController {
         return evBatteryTokenService.getDeposit(accountAddr).getValue();
     }
     @PostMapping("EVToken/deposit/")
-    public String deposit(@RequestParam(name="sellerAddr") String sellerAddr,
+    public Map<String, Object> deposit(@RequestParam(name="sellerAddr") String sellerAddr,
                        @RequestParam(name="amount") BigInteger amount) throws TransactionException, CipherException, IOException {
         return evBatteryTokenService.deposit(sellerAddr, new Uint(amount));
     }
     @PostMapping("EVToken/release/")
-    public String release(@RequestParam(name="sellerAddr") String sellerAddr
+    public Map<String, Object> release(@RequestParam(name="sellerAddr") String sellerAddr
                        ) throws TransactionException, CipherException, IOException {
         return evBatteryTokenService.release(sellerAddr);
     }
+
     @PostMapping("EVToken/status/")
     public String status(@RequestParam(name="sellerAddr") String sellerAddr, @RequestParam(name="stat") boolean stat
                        ) throws TransactionException, CipherException, IOException {

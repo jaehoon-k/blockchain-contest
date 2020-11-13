@@ -33,9 +33,9 @@ contract EVBatteryToken is Context, IERC20 {
         _decimals = decimals;
     }
 
-    event Deposited(address indexed to, uint256 value);
+    event Deposited(address indexed to, uint256 indexed value);
     event StatusChanged(address indexed to, bool value);
-    event Released(address indexed to);
+    event Released(address indexed to, uint256 indexed value);
     event refunded(address indexed to);
 
     function getDeposit(address account)  public view returns (uint256)  {
@@ -67,7 +67,7 @@ contract EVBatteryToken is Context, IERC20 {
         uint256 amount = _deposits[seller].value;
         _deposits[seller].value = 0;
         _balances[seller] = _balances[seller].add(amount);
-        emit Released(seller);
+        emit Released(seller, amount);
     }
 
     function refund(address seller) public{
