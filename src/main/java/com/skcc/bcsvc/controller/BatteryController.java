@@ -49,10 +49,20 @@ public class BatteryController {
     @GetMapping("battery/certificates")
     public Map<String, Object> verify(
             @RequestParam(name="ownerAddr") String ownerAddr,
-            @RequestParam(name="tokenId") String tokenId,
+            @RequestParam(name="tokenId") BigInteger tokenId,
             @RequestParam(name="tokenURI") String tokenURI) throws Exception {
 
-        return batteryService.verifyCertificate(ownerAddr, new BigInteger(tokenId, 16), tokenURI);
+//        return batteryService.verifyCertificate(ownerAddr, new BigInteger(tokenId, 16), tokenURI);
+        return batteryService.verifyCertificate(ownerAddr, tokenId, tokenURI);
+    }
+
+    @PutMapping("battery/certificates")
+    public Map<String, Object> transfer(
+            @RequestParam(name="fromAddr") String fromAddr,
+            @RequestParam(name="toAddr") String toAddr,
+            @RequestParam(name="tokenId") BigInteger tokenId) throws Exception {
+
+        return batteryService.transferFrom(fromAddr, toAddr, tokenId);
     }
 
     @GetMapping("/files")

@@ -100,7 +100,6 @@ public class BatteryServiceImpl implements BatteryService{
 
     @Override
     public Map<String, Object> verifyCertificate(String ownerAddr, BigInteger tokenId, String tokenURI) throws ExecutionException, InterruptedException {
-        String functionName = "verifyCertificate";
 
         RestTemplate restTemplate = new RestTemplate();
         BatteryCertificatesDTO batteryCertificatesDTO
@@ -109,7 +108,7 @@ public class BatteryServiceImpl implements BatteryService{
         log.info("Verify Battery Certificate(id:{}) of {}", batteryCertificatesDTO.getName(), ownerAddr);
 
         Function func = new Function(
-                functionName,
+                FUNC_VERIFY_CERTIFICATE,
                 Arrays.asList(
                         new Uint256(tokenId),
                         new Address(ownerAddr),
@@ -123,6 +122,8 @@ public class BatteryServiceImpl implements BatteryService{
 
         final String encodedFunc = FunctionEncoder.encode(func);
 
+        log.info("Call - function: {}, contract: {}", FUNC_VERIFY_CERTIFICATE, batteryCertificatesAddress);
+
         Transaction tx = Transaction.createEthCallTransaction(credentialsMap.get("buyer").getAddress(), batteryCertificatesAddress, encodedFunc);
         EthCall resp = web3j.ethCall(tx, DefaultBlockParameterName.LATEST).sendAsync().get();
 
@@ -132,7 +133,7 @@ public class BatteryServiceImpl implements BatteryService{
 
         Map<String, Object> result = new HashMap<>();
         result.put("owner", ownerAddr);
-        result.put("tokenId", tokenId);
+        result.put("tokenId", tokenId.toString());
         result.put("tokenURI", tokenURI);
         result.put("batteryId", batteryCertificatesDTO.getName());
         result.put("manufacturer", batteryCertificatesDTO.getAttributes().get("manufacturer").toString());
@@ -145,7 +146,6 @@ public class BatteryServiceImpl implements BatteryService{
 
     @Override
     public Map<String, Object> issueCertificate(String ownerAddr, String batteryId, String manufacturer, String modelNumber, BigInteger dateManufacture) throws IOException, TransactionException {
-        String functionName = "issueCertificate";
 
         // Create BatteryCertificateDTO
         BatteryCertificatesDTO batteryCertificatesDTO = new BatteryCertificatesDTO();
@@ -169,7 +169,7 @@ public class BatteryServiceImpl implements BatteryService{
         log.info("Issue Battery Certificate(id:{}) to {}", batteryId, ownerAddr );
 
         Function func = new Function(
-                functionName,
+                FUNC_ISSUE_CERTIFICATE,
                 Arrays.asList(
                         new Address(ownerAddr),
                         new Utf8String(batteryId),
@@ -184,8 +184,10 @@ public class BatteryServiceImpl implements BatteryService{
 
         FastRawTransactionManager txMgr = new FastRawTransactionManager(web3j, credentialsMap.get("default"));
 
+        log.info("Send - function: {}, contract: {}", FUNC_ISSUE_CERTIFICATE, batteryCertificatesAddress);
+
         String txHash = txMgr.sendTransaction(BigInteger.ZERO, BigInteger.valueOf(10_000_000), batteryCertificatesAddress, encodedFunc, BigInteger.ZERO).getTransactionHash();
-        log.info("Polling receipt - txHahs: {}, function: {}, contract: {}", new Object[]{txHash, functionName, batteryCertificatesAddress});
+        log.info("Polling receipt - txHahs: {}, function: {}, contract: {}", txHash, FUNC_ISSUE_CERTIFICATE, batteryCertificatesAddress);
         TransactionReceiptProcessor receiptProcessor = new PollingTransactionReceiptProcessor(web3j, 100, 1000);
         TransactionReceipt receipt = receiptProcessor.waitForTransactionReceipt(txHash);
 
@@ -197,7 +199,7 @@ public class BatteryServiceImpl implements BatteryService{
         log.info("Receipt: " + receipt);
         log.info("New Battery Certificate issued: Owner => {}, TokenId => {}, Certificate File => {}",
                 new Address(topics.get(2)),
-                topics.get(3).substring(2),
+                new BigInteger(topics.get(3).substring(2), 16),
                 tokenURI
         );
 
@@ -205,15 +207,15 @@ public class BatteryServiceImpl implements BatteryService{
         result.put("txHash", txHash);
         result.put("certificate", tokenURI);
         result.put("owner", new Address(topics.get(2)).getValue());
-        result.put("tokenId", topics.get(3).substring(2));
-
+        result.put("tokenId", new BigInteger(topics.get(3).substring(2), 16).toString());
+/*
         try {
             verifyCertificate(ownerAddr, new BigInteger(topics.get(3).substring(2), 16), tokenURI);
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
+        }*/
         /*// Event definition
         final Event MY_EVENT = new Event("Transfer", Arrays.<TypeReference<?>>asList(new TypeReference<Address>(true) {}, new TypeReference<Address>(true) {}, new TypeReference<Uint256>(true) {}));
 
@@ -238,6 +240,50 @@ public class BatteryServiceImpl implements BatteryService{
                 log.info("<Event> from: " + arg1 + " to: " + arg2 + " token id: " + arg3);
             }
         });*/
+
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> transferFrom(String fromAddr, String toAddr, BigInteger tokenId) throws IOException, TransactionException {
+
+        log.info("Transfer Battery Certificate(id:{}) from {} to {}", tokenId, fromAddr, toAddr);
+
+        Function func = new Function(
+                FUNC_SAFE_TRANSFER_FROM,
+                Arrays.asList(
+                        new Address(fromAddr),
+                        new Address(toAddr),
+                        new Uint256(tokenId)),
+                Collections.emptyList()
+        );
+
+        final String encodedFunc = FunctionEncoder.encode(func);
+
+        FastRawTransactionManager txMgr = new FastRawTransactionManager(web3j, credentialsMap.get("seller"));
+
+        String txHash = txMgr.sendTransaction(BigInteger.ZERO, BigInteger.valueOf(10_000_000), batteryCertificatesAddress, encodedFunc, BigInteger.ZERO).getTransactionHash();
+        log.info("Polling receipt - txHahs: {}, function: {}, contract: {}", txHash, FUNC_SAFE_TRANSFER_FROM, batteryCertificatesAddress);
+        TransactionReceiptProcessor receiptProcessor = new PollingTransactionReceiptProcessor(web3j, 100, 1000);
+        TransactionReceipt receipt = receiptProcessor.waitForTransactionReceipt(txHash);
+
+        if (!receipt.isStatusOK())
+            throw new RuntimeException("Transaction Failed: " + receipt);
+
+        List<String> topics = receipt.getLogs().get(0).getTopics();
+
+        log.info("Receipt: " + receipt);
+        log.info("Battery Certificate transfered: From => {}, To => {}, TokenId => {}",
+                new Address(topics.get(1)),
+                new Address(topics.get(2)),
+                new BigInteger(topics.get(3).substring(2), 16).toString()
+        );
+
+        Map<String,Object> result = new HashMap<>();
+        result.put("txHash", txHash);
+        result.put("From", new Address(topics.get(1)).getValue());
+        result.put("To", new Address(topics.get(2)).getValue());
+        result.put("tokenId", new BigInteger(topics.get(3).substring(2), 16).toString());
 
         return result;
     }
