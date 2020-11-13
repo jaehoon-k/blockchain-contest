@@ -45,7 +45,7 @@ sampleContracts:
 
 smartContracts:
     batteryCertificates.address: '0xffB55C1f49E29FE8f09cb8f43f57Ebaa225380fd'
-    EVBatteryToken.address: '0xC001834191449a854faE09b6aBD3459312710818'
+    EVBatteryToken.address: '0x4b755B2dcBd867344c76B3B5163E56A143b9c443'
 
 credentials:
   default:

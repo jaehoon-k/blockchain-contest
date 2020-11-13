@@ -15,10 +15,10 @@ public interface EVBatteryTokenService {
     Uint getBalance(String ownerAddr) throws IOException, CipherException, ExecutionException, InterruptedException;
     String mint(String ownerAddr, Uint amount) throws IOException, CipherException, TransactionException;
     
-    Uint getDeposit(String buyer) throws IOException, CipherException, ExecutionException, InterruptedException;
-    String deposit(String buyerAddr, Uint amount) throws IOException, CipherException, TransactionException;
-    String release(String buyer, String seller) throws IOException, CipherException, TransactionException;
-    String status(String buyer, boolean stat) throws IOException, CipherException, TransactionException;
-    String refund(String buyer) throws IOException, CipherException, TransactionException;
+    Uint getDeposit(String account) throws IOException, CipherException, ExecutionException, InterruptedException;
+    String deposit(String seller, Uint amount) throws IOException, CipherException, TransactionException;
+    String release(String seller) throws IOException, CipherException, TransactionException;
+    String status(String seller, boolean stat) throws IOException, CipherException, TransactionException;
+    String refund(String seller) throws IOException, CipherException, TransactionException;
 
 }

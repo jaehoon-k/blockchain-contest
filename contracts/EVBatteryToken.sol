@@ -33,53 +33,53 @@ contract EVBatteryToken is Context, IERC20 {
         _decimals = decimals;
     }
 
-    event Deposited(address indexed from, uint256 value);
-    event StatusChanged(address indexed from, bool value);
-    event Released(address indexed from, address indexed to);
-    event refunded(address indexed from);
+    event Deposited(address indexed to, uint256 value);
+    event StatusChanged(address indexed to, bool value);
+    event Released(address indexed to);
+    event refunded(address indexed to);
 
-    function getDeposit(address buyer)  public view returns (uint256)  {
+    function getDeposit(address account)  public view returns (uint256)  {
 
-        return _deposits[buyer].value;
+        return _deposits[account].value;
     }
 
-    function deposit(address buyer, uint256 amount) public  {
-        require(_balances[buyer]>=amount);
-        _balances[buyer] = _balances[buyer].sub(amount);
-        _deposits[buyer].value = _deposits[buyer].value.add(amount);
-        _deposits[buyer].status=PaymentStatus.Pending;
-        emit Deposited(buyer, amount);
+    function deposit(address seller, uint256 amount) public  {
+        require(_balances[msg.sender]>=amount);
+        _balances[msg.sender] = _balances[msg.sender].sub(amount);
+        _deposits[seller].value = _deposits[seller].value.add(amount);
+        _deposits[seller].status=PaymentStatus.Pending;
+        emit Deposited(seller, amount);
     }
 
-    function status(address buyer, bool stat) public  {
+    function status(address seller, bool stat) public  {
         if(stat==true){
-            _deposits[buyer].status=PaymentStatus.Completed;
+            _deposits[seller].status=PaymentStatus.Completed;
         }
         else{
-            _deposits[buyer].status=PaymentStatus.Failure;
+            _deposits[seller].status=PaymentStatus.Failure;
         }
-        emit StatusChanged(buyer, stat);
+        emit StatusChanged(seller, stat);
     }
 
-    function release(address buyer, address seller) public{
+    function release(address seller) public{
 
-        require(releaseAllowed(buyer), "ConditionalEscrow: buyer is not allowed to withdraw");
-        uint256 amount = _deposits[buyer].value;
-        _deposits[buyer].value = 0;
+        require(releaseAllowed(seller), "ConditionalEscrow: seller is not allowed to withdraw");
+        uint256 amount = _deposits[seller].value;
+        _deposits[seller].value = 0;
         _balances[seller] = _balances[seller].add(amount);
-        emit Released(buyer, seller);
+        emit Released(seller);
     }
 
-    function refund(address buyer) public{
+    function refund(address seller) public{
         
-        uint256 amount = _deposits[buyer].value;
-        _deposits[buyer].value = 0;
-        _balances[buyer] = _balances[buyer].add(amount);
-        emit refunded(buyer);
+        uint256 amount = _deposits[seller].value;
+        _deposits[seller].value = 0;
+        _balances[msg.sender] = _balances[msg.sender].add(amount);
+        emit refunded(seller);
     }
 
-    function releaseAllowed(address buyer) public returns (bool){
-        Payment memory payment=_deposits[buyer];
+    function releaseAllowed(address seller) public returns (bool){
+        Payment memory payment=_deposits[seller];
         if (payment.status == PaymentStatus.Completed) {
             return true;
         }

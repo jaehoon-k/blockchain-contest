@@ -1,37 +1,41 @@
 package com.skcc.bcsvc.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.skcc.bcsvc.dto.BatteryCertificatesDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.web3j.abi.*;
+import org.springframework.web.client.RestTemplate;
+import org.web3j.abi.FunctionEncoder;
+import org.web3j.abi.FunctionReturnDecoder;
+import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.*;
+import org.web3j.abi.datatypes.generated.Bytes32;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.crypto.*;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
-import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.request.Transaction;
-import org.web3j.protocol.core.methods.response.*;
+import org.web3j.protocol.core.methods.response.EthCall;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.exceptions.TransactionException;
 import org.web3j.tx.FastRawTransactionManager;
-import org.web3j.tx.TransactionManager;
-import org.web3j.tx.Transfer;
 import org.web3j.tx.response.PollingTransactionReceiptProcessor;
 import org.web3j.tx.response.TransactionReceiptProcessor;
-import org.web3j.utils.Convert;
-import org.web3j.utils.Numeric;
+
+
+import org.web3j.protocol.core.methods.response.*;
+
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 
@@ -41,6 +45,9 @@ import static org.web3j.crypto.Bip32ECKeyPair.HARDENED_BIT;
 public class EVBatteryTokenServiceImpl implements EVBatteryTokenService{
     @Autowired
     private Web3j web3j;
+
+    @Autowired
+    private HashMap<String, Credentials> credentialsMap;
 
     @Value("${smartContracts.EVBatteryToken.address}")
     private String evBatteryTokenAddress;
@@ -174,31 +181,25 @@ public class EVBatteryTokenServiceImpl implements EVBatteryTokenService{
     }
 
     @Override
-    public Uint getDeposit(String buyerAddr) throws IOException, CipherException, ExecutionException, InterruptedException {
+    public Uint getDeposit(String accountAddr) throws IOException, CipherException, ExecutionException, InterruptedException {
 
         String contractAddr = this.evBatteryTokenAddress;
         String functionName = "getDeposit";
 
-        Credentials credentials =
-                WalletUtils.loadCredentials(
-                        credentialPassword,
-                        credentialPath);
-        log.info("Credentials loaded");
-
-        String callerAddr = credentials.getAddress();
+  
 
 
         Function func1 = new Function(
                 functionName,
-                Arrays.asList(new Address(buyerAddr)),
+                Arrays.asList(new Address(accountAddr)),
                 Arrays.asList(new TypeReference<Uint256>() {})
         );
 
         final String encodedFunc1 = FunctionEncoder.encode(func1);
 
-        log.info("The address to process : {}", callerAddr);
-
-        org.web3j.protocol.core.methods.request.Transaction tx = Transaction.createEthCallTransaction(callerAddr, contractAddr, encodedFunc1);
+  
+        Transaction tx = Transaction.createEthCallTransaction(credentialsMap.get("default").getAddress(), contractAddr, encodedFunc1);
+      
         EthCall resp = web3j.ethCall(tx, DefaultBlockParameterName.LATEST).sendAsync().get();
 
         List<Type> output = FunctionReturnDecoder.decode(resp.getResult(), func1.getOutputParameters());
@@ -213,26 +214,23 @@ public class EVBatteryTokenServiceImpl implements EVBatteryTokenService{
     }
 
     @Override
-    public String deposit(String buyerAddr, Uint amount) throws IOException, CipherException, TransactionException {
+    public String deposit(String sellerAddr, Uint amount) throws IOException, CipherException, TransactionException {
 
         String contractAddr = this.evBatteryTokenAddress;
         String functionName2 = "deposit";
-        Credentials credentials =
-                WalletUtils.loadCredentials(
-                        credentialPassword,
-                        credentialPath);
 
-        log.info("{} : deposit {} tokens", buyerAddr, amount.getValue());
+
+        log.info("{} : deposit {} tokens", sellerAddr, amount.getValue());
 
         Function func2 = new Function(
                 functionName2,
-                Arrays.asList(new Address(buyerAddr), amount),
+                Arrays.asList(new Address(sellerAddr), amount),
                 Collections.emptyList()
         );
 
         final String encodedFunc2 = FunctionEncoder.encode(func2);
 
-        FastRawTransactionManager txMgr = new FastRawTransactionManager(web3j, credentials);
+        FastRawTransactionManager txMgr = new FastRawTransactionManager(web3j, credentialsMap.get("buyer"));
 
         String txHash = txMgr.sendTransaction(BigInteger.ZERO, BigInteger.valueOf(10_000_000), contractAddr, encodedFunc2, BigInteger.ZERO).getTransactionHash();
         log.info("Waiting receipt - txHahs: {}, function: {}, contract: {}", new Object[]{txHash, functionName2, contractAddr});
@@ -244,26 +242,20 @@ public class EVBatteryTokenServiceImpl implements EVBatteryTokenService{
         return txHash;
     }
     @Override
-    public String release(String buyer, String seller) throws IOException, CipherException, TransactionException {
+    public String release(String seller) throws IOException, CipherException, TransactionException {
 
         String contractAddr = this.evBatteryTokenAddress;
         String functionName2 = "release";
 
-
-        Credentials credentials =
-                WalletUtils.loadCredentials(
-                        credentialPassword,
-                        credentialPath);
-
         Function func2 = new Function(
                 functionName2,
-                Arrays.asList(new Address(buyer),new Address(seller)),
+                Arrays.asList(new Address(seller)),
                 Collections.emptyList()
         );
 
         final String encodedFunc2 = FunctionEncoder.encode(func2);
 
-        FastRawTransactionManager txMgr = new FastRawTransactionManager(web3j, credentials);
+        FastRawTransactionManager txMgr = new FastRawTransactionManager(web3j, credentialsMap.get("buyer"));
 
         String txHash = txMgr.sendTransaction(BigInteger.ZERO, BigInteger.valueOf(10_000_000), contractAddr, encodedFunc2, BigInteger.ZERO).getTransactionHash();
         log.info("Waiting receipt - txHahs: {}, function: {}, contract: {}", new Object[]{txHash, functionName2, contractAddr});
@@ -276,26 +268,21 @@ public class EVBatteryTokenServiceImpl implements EVBatteryTokenService{
     }
     
     @Override
-    public String status(String buyer, boolean stat) throws IOException, CipherException, TransactionException {
+    public String status(String seller, boolean stat) throws IOException, CipherException, TransactionException {
 
         String contractAddr = this.evBatteryTokenAddress;
         String functionName2 = "status";
 
 
-        Credentials credentials =
-                WalletUtils.loadCredentials(
-                        credentialPassword,
-                        credentialPath);
-
         Function func2 = new Function(
                 functionName2,
-                Arrays.asList(new Address(buyer),new Bool(stat)),
+                Arrays.asList(new Address(seller),new Bool(stat)),
                 Collections.emptyList()
         );
 
         final String encodedFunc2 = FunctionEncoder.encode(func2);
 
-        FastRawTransactionManager txMgr = new FastRawTransactionManager(web3j, credentials);
+        FastRawTransactionManager txMgr = new FastRawTransactionManager(web3j, credentialsMap.get("buyer"));
 
         String txHash = txMgr.sendTransaction(BigInteger.ZERO, BigInteger.valueOf(10_000_000), contractAddr, encodedFunc2, BigInteger.ZERO).getTransactionHash();
         log.info("Waiting receipt - txHahs: {}, function: {}, contract: {}", new Object[]{txHash, functionName2, contractAddr});
@@ -307,26 +294,20 @@ public class EVBatteryTokenServiceImpl implements EVBatteryTokenService{
         return txHash;
     }
     @Override
-    public String refund(String buyer) throws IOException, CipherException, TransactionException {
+    public String refund(String seller) throws IOException, CipherException, TransactionException {
 
         String contractAddr = this.evBatteryTokenAddress;
         String functionName2 = "refund";
 
-
-        Credentials credentials =
-                WalletUtils.loadCredentials(
-                        credentialPassword,
-                        credentialPath);
-
         Function func2 = new Function(
                 functionName2,
-                Arrays.asList(new Address(buyer)),
+                Arrays.asList(new Address(seller)),
                 Collections.emptyList()
         );
 
         final String encodedFunc2 = FunctionEncoder.encode(func2);
 
-        FastRawTransactionManager txMgr = new FastRawTransactionManager(web3j, credentials);
+        FastRawTransactionManager txMgr = new FastRawTransactionManager(web3j, credentialsMap.get("buyer"));
 
         String txHash = txMgr.sendTransaction(BigInteger.ZERO, BigInteger.valueOf(10_000_000), contractAddr, encodedFunc2, BigInteger.ZERO).getTransactionHash();
         log.info("Waiting receipt - txHahs: {}, function: {}, contract: {}", new Object[]{txHash, functionName2, contractAddr});

@@ -52,29 +52,29 @@ public class TokenController {
         return evBatteryTokenService.mint(ownerAddr, new Uint(amount));
     }
 
-    @GetMapping("EVToken/deposit/{buyerAddr}")
+    @GetMapping("EVToken/deposit/{accountAddr}")
     public BigInteger getDeposit(
-            @PathVariable(required = true) String buyerAddr) throws InterruptedException, ExecutionException, CipherException, IOException {
-        return evBatteryTokenService.getDeposit(buyerAddr).getValue();
+            @PathVariable(required = true) String accountAddr) throws InterruptedException, ExecutionException, CipherException, IOException {
+        return evBatteryTokenService.getDeposit(accountAddr).getValue();
     }
     @PostMapping("EVToken/deposit/")
-    public String deposit(@RequestParam(name="buyerAddr") String buyerAddr,
+    public String deposit(@RequestParam(name="sellerAddr") String sellerAddr,
                        @RequestParam(name="amount") BigInteger amount) throws TransactionException, CipherException, IOException {
-        return evBatteryTokenService.deposit(buyerAddr, new Uint(amount));
+        return evBatteryTokenService.deposit(sellerAddr, new Uint(amount));
     }
     @PostMapping("EVToken/release/")
-    public String withdraw(@RequestParam(name="buyerAddr") String buyerAddr, @RequestParam(name="sellerAddr") String sellerAddr
+    public String release(@RequestParam(name="sellerAddr") String sellerAddr
                        ) throws TransactionException, CipherException, IOException {
-        return evBatteryTokenService.release(buyerAddr, sellerAddr);
+        return evBatteryTokenService.release(sellerAddr);
     }
     @PostMapping("EVToken/status/")
-    public String status(@RequestParam(name="buyerAddr") String buyerAddr, @RequestParam(name="stat") boolean stat
+    public String status(@RequestParam(name="sellerAddr") String sellerAddr, @RequestParam(name="stat") boolean stat
                        ) throws TransactionException, CipherException, IOException {
-        return evBatteryTokenService.status(buyerAddr, stat);
+        return evBatteryTokenService.status(sellerAddr, stat);
     }
     @PostMapping("EVToken/refund/")
-    public String status(@RequestParam(name="buyerAddr") String buyerAddr
+    public String status(@RequestParam(name="sellerAddr") String sellerAddr
                        ) throws TransactionException, CipherException, IOException {
-        return evBatteryTokenService.refund(buyerAddr);
+        return evBatteryTokenService.refund(sellerAddr);
     }
 }
