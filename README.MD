@@ -11,19 +11,19 @@ Swagger UI 주소 :  http://localhost:5000/swagger-ui.html#/
 #### 테스트 시나리오
 
 1. 인증서 발급
-2. 구매자 : 구매 요청 (인증서 파일 입력)
+2. 구매 요청 (인증서 파일 입력) : 구매자
     1. 인증서 검증
     2. Deposit
-3. 판매자 : 구매 요청 확인
+3. 구매 요청 확인 : 판매자
     1. Deposit 확인
     2. 소유권 이전
-4. 구매자 : 구매 확정
+4. 구매 확정 : 구매자
     1. 소유권 이전 확인
     2. Withdraw 허가
-5. 판매자 : 대금 수령
+5. 대금 수령 : 판매자
     1. Withdraw
     
-테스트 계정 주소 :
+#### 테스트 계정 주소
 
 Default:
 `0xca1fe1c6382be7563f7a57a53932a23f702a43a5`
@@ -37,9 +37,53 @@ Seller:
 `0x36c7744371a858542c5cf51adc040492bfa48487`
 (/src/main/resources/credentials/36c7744371a858542c5cf51adc040492bfa48487.json)
 
-1. 인증서 발급 : POST /battery/certificate
+#### 테스트 방법
 
-2. 인증서 검증 : GTE /battery/certificate
+1. 인증서 발급 : POST /battery/certificate
+    - Request Params
+        - batteryId : 베터리 아이디
+        - dateManufacture : 제조일자
+        - manufacturer : 제조사
+        - modelNumber : 모델 번호
+        - ownerAddr : 인증서 토크을 발급 받을 주소
+    - Response
+        - owner : 인증서 수요자 주소
+        - tokenId : 인증서 토큰 아이디
+        - certificate : 인증서 토큰 Metadata json 파일 경로(Token URI)
+        - txHash : 트랜잭션 해쉬
+
+2. 구매 요청
+
+    2.1. 인증서 검증 : GET /battery/certificate
+        - Request Params
+            - ownerAddr : 인증서 소유자 주소
+            - tokenId : 인증서 토큰 아이디
+            - tokenURI : 인증서 토큰 Metadata json 파일 경로
+        - Response
+            - owner : 인증서 소유자 주소
+            - tokenId : 인증서 토큰 아이디
+            - tokenURI : 인증서 토큰 Metadata json 파일 경로
+            - batteryId : 베터리 아이디
+            - isValid": true,
+            - modelNumber : 
+            - dateManufacture": "12345",
+            - manufacturer": "SKI"
+
+    2.2. Deposit : POST /EVToken/depoist
+
+3. 구매 요청 확인
+
+    3.1. Deposit 확인 : GET /EVToken/deposit
+
+    3.2. 소유권 이전 : PUT /battery/certificates/owner
+
+4. 구매 확정
+
+    4.1. 소유권 이저 확인 : GET /battery/certificates/owner
+
+    4.2. Withdraw 허가 : POST /EVToken/status
+
+5. 대금 수령 : POST /EVToken/release
 
 ## 스마트컨트랙트 배포
 
@@ -59,6 +103,6 @@ Truffle 설치 후 다음 명령 실행
 
 `migrate`
 
-- 특정 배포 스크립트만 실행 (예, 4_deploy_erc20.js 만 실)
+- 특정 배포 스크립트만 실행 (예, 2_deploy_battery_certificates.js 만 실)
 
-`migrate --f 4 --to 4`
+`migrate --f 2 --to 2`
