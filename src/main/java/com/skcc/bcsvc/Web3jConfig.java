@@ -5,12 +5,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.web3j.crypto.CipherException;
+import org.web3j.crypto.Credentials;
+import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Positive;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 public class Web3jConfig {
@@ -27,7 +33,6 @@ public class Web3jConfig {
         return this.buildWeb3j(protocol, host, port, jwt);
 
     }
-
 
     private Web3j buildWeb3j(@NotEmpty final String protocol,
                              @NotEmpty final String host,
@@ -47,5 +52,30 @@ public class Web3jConfig {
 
         return web3j;
 
+    }
+
+    @Bean
+    public HashMap<String, Credentials> defaultCredential(
+            @Value("${credentials.default.password}") String defaultCredentialPassword,
+            @Value("${credentials.default.path}") String defaultCredentialPath,
+            @Value("${credentials.buyer.password}") String buyerCredentialPassword,
+            @Value("${credentials.buyer.path}") String buyerCredentialPath,
+            @Value("${credentials.seller.password}") String sellerCredentialPassword,
+            @Value("${credentials.seller.path}") String sellerCredentialPath) throws IOException, CipherException {
+
+        HashMap<String, Credentials> credentialsMap = new HashMap<>();
+        credentialsMap.put("default", loadCredential(defaultCredentialPassword, defaultCredentialPath));
+        credentialsMap.put("buyer", loadCredential(buyerCredentialPassword, buyerCredentialPath));
+        credentialsMap.put("seller", loadCredential(sellerCredentialPassword, sellerCredentialPath));
+
+        return credentialsMap;
+    }
+
+    private Credentials loadCredential(String password, String path) throws IOException, CipherException  {
+        Credentials credentials =
+                WalletUtils.loadCredentials(password, path);
+        logger.info("Credentials loaded. {}", credentials.getAddress());
+
+        return credentials;
     }
 }

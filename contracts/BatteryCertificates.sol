@@ -74,9 +74,13 @@ contract BatteryCertificates is Context, ERC165, ERC721, IERC721Metadata, IERC72
     }
 
     function verifyCertificate(uint256 tokenId, address owner, string memory batteryId, string memory manufacturer, string memory modelNumber, uint256 dateManufacture, string memory URI ) public view returns (bool) {
-        require(tokenId == uint256(keccak256(abi.encodePacked(batteryId, manufacturer, modelNumber, dateManufacture))), "Invalid certificate.");
-        require(ownerOf(tokenId) == owner, "Invalid token owner.");
-        require(_verifyTokenURI(tokenId, URI), "Invalid token URI.");
+        if (tokenId != uint256(keccak256(abi.encodePacked(batteryId, manufacturer, modelNumber, dateManufacture))))
+            return false;
+        if (keccak256(abi.encodePacked(ownerOf(tokenId))) != keccak256(abi.encodePacked(owner)))
+            return false;
+        if (!_verifyTokenURI(tokenId, URI))
+            return false;
+
         return true;
     }
 

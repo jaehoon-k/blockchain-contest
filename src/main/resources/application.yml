@@ -7,7 +7,7 @@ logging.level:
   org.springframework.boot.autoconfigure: ERROR
 
 server:
-  port: 8080
+  port: 5000
 
 jwt:
   secret: javainuse
@@ -43,10 +43,19 @@ ethereum:
 sampleContracts:
     simpleCoin.address: '0xABa7902442c5739c6f0c182691d48D63d06A212E'
 
+smartContracts:
+    batteryCertificates.address: '0xffB55C1f49E29FE8f09cb8f43f57Ebaa225380fd'
+
 credentials:
   default:
     password: '1234'
-    path: 'src/main/resources/ca1fe1c6382be7563f7a57a53932a23f702a43a5.json'
+    path: 'src/main/resources/credentials/ca1fe1c6382be7563f7a57a53932a23f702a43a5.json'
+  buyer:
+    password: '1234'
+    path: 'src/main/resources/credentials/2bc06b1a8a1cbddf3c63ae3e78f9ffc9d38c303c.json'
+  seller:
+    password: '1234'
+    path: 'src/main/resources/credentials/36c7744371a858542c5cf51adc040492bfa48487.json'
 
 resttemplate:
   base:
