@@ -40,6 +40,7 @@ Seller:
 #### 테스트 방법
 
 1. 인증서 발급 : POST /battery/certificate
+
     - Request Params
         - batteryId : 베터리 아이디
         - dateManufacture : 제조일자
