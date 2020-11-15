@@ -70,21 +70,43 @@ Seller:
             - manufacturer": "SKI"
 
     2.2. Deposit : POST /EVToken/depoist
-
+        - Request Params
+            - amount : deposit할 Token 수
+            - sellerAddr : 판매자 주소
+        - Response
+            - amount : deposit된 토큰 수
+            - from(Buyer) : 구매자 주소
+            - to(Seller) : 판매자 주소
+            
 3. 구매 요청 확인
 
     3.1. Deposit 확인 : GET /EVToken/deposit
-
+        - Request Params
+            - sellerAddr : 판매자 주소
+        - Response
+            - amount : deposit된 토큰 수
+            - from(Buyer) : 구매자 주소
+            - to(Seller) : 판매자 주소
+            
     3.2. 소유권 이전 : PUT /battery/certificates/owner
 
 4. 구매 확정
 
-    4.1. 소유권 이저 확인 : GET /battery/certificates/owner
+    4.1. 소유권 이전 확인 : GET /battery/certificates/owner
 
     4.2. Withdraw 허가 : POST /EVToken/status
-
+        - Request Params
+            - sellerAddr : 판매자 주소
+            - stat : True(허가), False(불허가)
+            
 5. 대금 수령 : POST /EVToken/release
-
+        - Request Params
+            - sellerAddr : 판매자 주소
+        - Response
+            - amount : 수령된 토큰 수
+            - from(Buyer) : 구매자 주소
+            - to(Seller) : 판매자 주소
+            
 ## 스마트컨트랙트 배포
 
 (참고 : https://www.trufflesuite.com/docs/truffle/reference/truffle-commands)
