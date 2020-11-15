@@ -55,6 +55,7 @@ Seller:
 2. 구매 요청
 
     2.1. 인증서 검증 : GET /battery/certificate
+    
         - Request Params
             - ownerAddr : 인증서 소유자 주소
             - tokenId : 인증서 토큰 아이디
@@ -70,6 +71,7 @@ Seller:
             - manufacturer": "SKI"
 
     2.2. Deposit : POST /EVToken/depoist
+    
         - Request Params
             - amount : deposit할 Token 수
             - sellerAddr : 판매자 주소
@@ -81,6 +83,7 @@ Seller:
 3. 구매 요청 확인
 
     3.1. Deposit 확인 : GET /EVToken/deposit
+    
         - Request Params
             - sellerAddr : 판매자 주소
         - Response
@@ -95,11 +98,13 @@ Seller:
     4.1. 소유권 이전 확인 : GET /battery/certificates/owner
 
     4.2. Withdraw 허가 : POST /EVToken/status
+    
         - Request Params
             - sellerAddr : 판매자 주소
             - stat : True(허가), False(불허가)
             
 5. 대금 수령 : POST /EVToken/release
+
         - Request Params
             - sellerAddr : 판매자 주소
         - Response
