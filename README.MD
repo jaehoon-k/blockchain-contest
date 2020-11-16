@@ -6,6 +6,16 @@ node_modules/@trufflesuite/web3-provider-engine/subproviders/rpc.js 파일에 jw
 
 ## 테스트
 
+#### Application 실행
+###### 실행환경
+`Java 11`
+
+`Maven 3.5.3`
+
+다으 명령으로 Application 실행
+
+`mvn spring-boot:run`
+
 Swagger UI 주소 :  http://localhost:5000/swagger-ui.html#/
 
 #### 테스트 시나리오
