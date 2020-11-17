@@ -1,12 +1,7 @@
-## 환경 설정
-
-npm install 실행
-
-node_modules/@trufflesuite/web3-provider-engine/subproviders/rpc.js 파일에 jwt 설정
-
 ## 테스트
 
 #### Application 실행
+
 ###### 실행환경
 `Java 11`
 
@@ -140,6 +135,12 @@ Seller:
             - to(Seller) : 판매자 주소
             
 ## 스마트컨트랙트 배포
+
+#### 환경 설정
+
+npm install 실행
+
+node_modules/@trufflesuite/web3-provider-engine/subproviders/rpc.js 파일에 jwt 설정
 
 (참고 : https://www.trufflesuite.com/docs/truffle/reference/truffle-commands)
 
