@@ -103,10 +103,26 @@ Seller:
             - to(Seller) : 판매자 주소
             
     3.2. 소유권 이전 : PUT /battery/certificates/owner
+    
+        - Request Params
+            - fromAddr : 판매자 주소
+            - toAddr : 구매자 주소
+            - tokenId : 인증서 토큰 아이디
+        - Response
+            - tokenId : 인증서 토큰 아이디
+            - from : 판매자 주소
+            - to : 구매자 주소
+            - txHash : 트랜잭션 해쉬
 
 4. 구매 확정
 
     4.1. 소유권 이전 확인 : GET /battery/certificates/owner
+    
+        - Request Params
+            - tokenId : 인증서 토큰 아이디
+        - Response
+            - owner : 토큰 소유 주소
+            - tokenId : 토큰 아이디
 
     4.2. Withdraw 허가 : POST /EVToken/status
     
