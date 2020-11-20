@@ -53,9 +53,9 @@ Seller:
             - dateManufacture : 제조일자
             - manufacturer : 제조사
             - modelNumber : 모델 번호
-            - ownerAddr : 인증서 토크을 발급 받을 주소
+            - ownerAddr : 인증서 토큰을 발급 받을 주소
         - Response
-            - owner : 인증서 수요자 주소
+            - owner : 인증서 소유자 주소
             - tokenId : 인증서 토큰 아이디
             - certificate : 인증서 토큰 Metadata json 파일 경로(Token URI)
             - txHash : 트랜잭션 해쉬
