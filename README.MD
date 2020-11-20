@@ -48,17 +48,17 @@ Seller:
 
 1. 인증서 발급 : POST /battery/certificate
 
-    - Request Params
-        - batteryId : 베터리 아이디
-        - dateManufacture : 제조일자
-        - manufacturer : 제조사
-        - modelNumber : 모델 번호
-        - ownerAddr : 인증서 토크을 발급 받을 주소
-    - Response
-        - owner : 인증서 수요자 주소
-        - tokenId : 인증서 토큰 아이디
-        - certificate : 인증서 토큰 Metadata json 파일 경로(Token URI)
-        - txHash : 트랜잭션 해쉬
+        - Request Params
+            - batteryId : 베터리 아이디
+            - dateManufacture : 제조일자
+            - manufacturer : 제조사
+            - modelNumber : 모델 번호
+            - ownerAddr : 인증서 토크을 발급 받을 주소
+        - Response
+            - owner : 인증서 수요자 주소
+            - tokenId : 인증서 토큰 아이디
+            - certificate : 인증서 토큰 Metadata json 파일 경로(Token URI)
+            - txHash : 트랜잭션 해쉬
 
 2. 구매 요청
 
